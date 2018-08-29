@@ -157,7 +157,7 @@ class ThermostatAlexaEndpoint(DomoticzEndpoint):
         super().__init__(endpointId, friendlyName, description, manufacturerName)
         self.addCapability(AlexaTemperatureSensor(self, 'Alexa.TemperatureSensor',[{'name': 'temperature'}]))
         thermostatCapability = AlexaThermostatController(self, 'Alexa.ThermostatController',[{'name': 'targetSetpoint'}, {'name': 'thermostatMode'}])
-        thermostatCapability.setModesSupported(["HEAT","COOL"])
+        thermostatCapability.setModesSupported(["HEAT","COOL","AUTO","ECO","OFF"])
         self.addCapability(thermostatCapability)
 
     def setTargetSetPoint(self, targetSetPoint):
@@ -234,20 +234,18 @@ class Domoticz(object):
             devType = device['Type']
 
             friendlyName = device['Name']
-            description = device['Description']
-            matchObj = re.match( r'.*Alexa_Name:\s*([^\n]*)', description, re.M|re.I|re.DOTALL)
-            if matchObj:  friendlyName = matchObj.group(1)
-
             endpointId = device['idx']
             manufacturerName = device['HardwareName']
             description = devType
-            # For test purpose
-            description = description
-            matchObj = re.match( r'.*Alexa_Description:\s*([^\n]*)', description, re.M|re.I|re.DOTALL)
+
+            matchObj = re.match( r'.*Alexa_Name:\s*([^\n]*)', device['Description'], re.M|re.I|re.DOTALL)
+            if matchObj:  friendlyName = matchObj.group(1)
+
+            matchObj = re.match( r'.*Alexa_Description:\s*([^\n]*)', device['Description'], re.M|re.I|re.DOTALL)
             if matchObj:  description = matchObj.group(1)
 
             extra = None
-            matchObj = re.match( r'.*Alexa_extra:\s*([^\n]*)', description, re.M|re.I|re.DOTALL)
+            matchObj = re.match( r'.*Alexa_extra:\s*([^\n]*)', device['Description'], re.M|re.I|re.DOTALL)
             if matchObj:  extra = matchObj.group(1)
 
             if (devType.startswith('Scene') or devType.startswith('Group')):
