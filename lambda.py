@@ -39,5 +39,9 @@ def event_handler(request, context):
     if config.debug:
         logger.setLevel(logging.DEBUG)
 
+    logger.debug("Lambda invocation %s", request.data.decode('utf-8'))
     dzRemote = DomoticzHandler.Domoticz(config.url, config.username, config.password)
-    return AlexaSmartHome.handle_message(dzRemote, request)
+    response =  AlexaSmartHome.handle_message(dzRemote, request)
+    logger.debug("Skill response %s", response)
+    
+    return response
