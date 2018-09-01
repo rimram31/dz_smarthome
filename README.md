@@ -19,7 +19,7 @@ git clone git@github.com:rimram31/dz_smarthome.git
 cd dz_smartome
 ```
 
-Fill your ```configdz.json``` file
+Fill your ```configdz.json``` file, domoticz endpoint, credentials. Debug mode enable debug log level (see lambda logs)
 ```sh
 cp configdz-template.json configdz.json
 nano configdz.json

@@ -198,7 +198,7 @@ class Domoticz(object):
 
     def api(self, query):
         url = self.url + "/json.htm?" + query
-        print(url)
+        _LOGGER.debug("Domoticz API call %s", url)
         headers = { 'Content-Type': 'application/json' }
         if self.authorization is not None:
             headers['Authorization'] = self.authorization
