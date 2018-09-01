@@ -340,7 +340,7 @@ class Alexa(object):
                     continue
                 discovery_endpoints.append(discovery_endpoint)
 
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
 
             return api_message(
                 request, name='Discover.Response', namespace='Alexa.Discovery',
@@ -349,13 +349,13 @@ class Alexa(object):
     class PowerController(AlexaSmartHomeCall):
 
         def TurnOn(self, request):
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             endpoint = self.handler.getEndpoint(request)
             endpoint.turnOn()
             return api_message(request)
 
         def TurnOff(self, request):
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             endpoint = self.handler.getEndpoint(request)
             endpoint.turnOff()
             return api_message(request)
@@ -373,7 +373,7 @@ class Alexa(object):
 
         def SetBrightness(self, request):
             brightness = int(request[API_PAYLOAD]['brightness'])
-            _LOGGER.error("Request %s/%s brightness %d", 
+            _LOGGER.debug("Request %s/%s brightness %d", 
                    request[API_HEADER]['namespace'], request[API_HEADER]['name'],
                    brightness)
             endpoint = self.handler.getEndpoint(request)
@@ -381,7 +381,7 @@ class Alexa(object):
 
         def AdjustBrightness(self, request):
             brightness_delta = int(request[API_PAYLOAD]['brightnessDelta'])
-            _LOGGER.error("Request %s/%s brightness_delta %d", 
+            _LOGGER.debug("Request %s/%s brightness_delta %d", 
                         request[API_HEADER]['namespace'], request[API_HEADER]['name'],
                         brightness_delta)
             endpoint = self.handler.getEndpoint(request)
@@ -394,7 +394,7 @@ class Alexa(object):
             h = float(request[API_PAYLOAD]['color']['hue'])
             s = float(request[API_PAYLOAD]['color']['saturation'])
             b = float(request[API_PAYLOAD]['color']['brightness'])
-            _LOGGER.error("Request %s/%s", 
+            _LOGGER.debug("Request %s/%s", 
                         request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             endpoint = self.handler.getEndpoint(request)
             endpoint.setColor(h,s,b)
@@ -404,7 +404,7 @@ class Alexa(object):
 
         def SetColorTemperature(self, request):
             kelvin = int(request[API_PAYLOAD]['colorTemperatureInKelvin'])
-            _LOGGER.error("Request %s/%s kelvin %d", 
+            _LOGGER.debug("Request %s/%s kelvin %d", 
                         request[API_HEADER]['namespace'], request[API_HEADER]['name'],
                         kelvin)
             endpoint = self.handler.getEndpoint(request)
@@ -415,7 +415,7 @@ class Alexa(object):
             ##current = int(entity.attributes.get(light.ATTR_COLOR_TEMP))
             ##max_mireds = int(entity.attributes.get(light.ATTR_MAX_MIREDS))
             ##value = min(max_mireds, current + 50)
-            _LOGGER.error("Request %s/%s", 
+            _LOGGER.debug("Request %s/%s", 
                         request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request)
 
@@ -423,7 +423,7 @@ class Alexa(object):
             ##current = int(entity.attributes.get(light.ATTR_COLOR_TEMP))
             ##max_mireds = int(entity.attributes.get(light.ATTR_MAX_MIREDS))
             ##value = min(max_mireds, current - 50)
-            _LOGGER.error("Request %s/%s", 
+            _LOGGER.debug("Request %s/%s", 
                         request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request)
 
@@ -434,7 +434,7 @@ class Alexa(object):
                 'cause': {'type': 'VOICE_INTERACTION'},
                 'timestamp': '%sZ' % (datetime.utcnow().isoformat(),)
             }
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request,
                 name='ActivationStarted', namespace='Alexa.SceneController',
                 payload=payload)
@@ -444,7 +444,7 @@ class Alexa(object):
                 'cause': {'type': 'VOICE_INTERACTION'},
                 'timestamp': '%sZ' % (datetime.utcnow().isoformat(),)
             }
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request,
                 name='DeactivationStarted', namespace='Alexa.SceneController',
                 payload=payload)
@@ -459,7 +459,7 @@ class Alexa(object):
             ##    if percentage <= 33:
             ##        speed = "low"
             ## ...
-            _LOGGER.error("Request %s/%s percentage %d", 
+            _LOGGER.debug("Request %s/%s percentage %d", 
                         request[API_HEADER]['namespace'], request[API_HEADER]['name'],
                         percentage)
             endpoint = self.handler.getEndpoint(request)
@@ -470,7 +470,7 @@ class Alexa(object):
 
         def AdjustPercentage(self, request):
             percentage_delta = int(request[API_PAYLOAD]['percentageDelta'])
-            _LOGGER.error("Request %s/%s percentage_delta %d", 
+            _LOGGER.debug("Request %s/%s percentage_delta %d", 
                         request[API_HEADER]['namespace'], request[API_HEADER]['name'],
                         percentage_delta)
             endpoint = self.handler.getEndpoint(request)
@@ -490,65 +490,65 @@ class Alexa(object):
                 'namespace': 'Alexa.LockController',
                 'value': 'LOCKED'
             }]
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request, context={'properties': properties})
 
         # Not supported by Alexa ...
         def Unlock(self, request):
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request)
 
     class InputController(AlexaSmartHomeCall):
 
         def SelectInput(self, request):
             media_input = request[API_PAYLOAD]['input']
-            _LOGGER.error("Request %s/%s media_input %s", request[API_HEADER]['namespace'], request[API_HEADER]['name',media_input])
+            _LOGGER.debug("Request %s/%s media_input %s", request[API_HEADER]['namespace'], request[API_HEADER]['name',media_input])
             return api_message(request)
 
     class Speaker(AlexaSmartHomeCall):
 
         def SetVolume(self, request):
             volume = round(float(request[API_PAYLOAD]['volume'] / 100), 2)
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request)
 
         def AdjustVolume(self, request):
             volume_delta = int(request[API_PAYLOAD]['volume'])
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request)
 
     class StepSpeaker(AlexaSmartHomeCall):
 
         def AdjustVolume(self, request):
             volume_step = request[API_PAYLOAD]['volumeSteps']
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request)
 
         def SetMute(self, request):
             mute = bool(request[API_PAYLOAD]['mute'])
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request)
 
     class PlaybackController(AlexaSmartHomeCall):
 
         def Play(self, request):
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request)
 
         def Pause(self, request):
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request)
 
         def Stop(self, request):
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request)
 
         def Next(self, request):
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request)
 
         def Previous(self, request):
-            _LOGGER.error("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
             return api_message(request)
 
     class ThermostatController(AlexaSmartHomeCall):
@@ -560,7 +560,7 @@ class Alexa(object):
             payload = request[API_PAYLOAD]
             if 'targetSetpoint' in payload:
                 temp = temperature_from_object(payload['targetSetpoint'])
-                _LOGGER.error("Request %s/%s targetSetpoint %.2f",
+                _LOGGER.debug("Request %s/%s targetSetpoint %.2f",
                             request[API_HEADER]['namespace'], request[API_HEADER]['name'], temp)
                 endpoint = self.handler.getEndpoint(request)
                 endpoint.setTargetSetPoint(temp)
@@ -581,7 +581,7 @@ class Alexa(object):
             ##unit = entity.attributes[CONF_UNIT_OF_MEASUREMENT]
             temp_delta = temperature_from_object(request[API_PAYLOAD]['targetSetpointDelta'])
 
-            _LOGGER.error("Request %s/%s targetSetpoint temp_delta %.2f", 
+            _LOGGER.debug("Request %s/%s targetSetpoint temp_delta %.2f", 
                         request[API_HEADER]['namespace'], request[API_HEADER]['name'], temp_delta)
 
             endpoint = self.handler.getEndpoint(request)
@@ -603,7 +603,7 @@ class Alexa(object):
             mode = request[API_PAYLOAD]['thermostatMode']
             mode = mode if isinstance(mode, str) else mode['value']
 
-            _LOGGER.error("Request %s/%s targetSetpoint mode %s", 
+            _LOGGER.debug("Request %s/%s targetSetpoint mode %s", 
                         request[API_HEADER]['namespace'], request[API_HEADER]['name'], str(mode))
 
             endpoint = self.handler.getEndpoint(request)
@@ -623,7 +623,7 @@ class Alexa(object):
             for interface in endpoint.capabilities():
                 properties.extend(interface.serializeProperties())
 
-            _LOGGER.error("Request %s/%s properties %s", 
+            _LOGGER.debug("Request %s/%s properties %s", 
                         request[API_HEADER]['namespace'], request[API_HEADER]['name'], str(properties))
             return api_message(request,
                 name='StateReport',
@@ -642,7 +642,7 @@ def invoke(namespace, name, handler, request):
 
     except Exception:
         _LOGGER.error("Can't process %s/%s", namespace, name)
-        return api_error(request, error_type='NO_SUCH_ENDPOINT')
+        return api_error(request, error_type='INTERNAL_ERROR')
 
 def fahrenheit_to_celsius(fahrenheit: float, interval: bool = False) -> float:
     if interval:

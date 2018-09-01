@@ -1,3 +1,3 @@
 #zip -r lambda.zip *
 rm lambda.zip
-zip -X lambda.zip configdz.json lambda.py AlexaSmartHome.py DomoticzHandler.py
+zip -r lambda.zip configdz.json lambda.py AlexaSmartHome.py DomoticzHandler.py

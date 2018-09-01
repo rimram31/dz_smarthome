@@ -207,7 +207,6 @@ class Domoticz(object):
 
     def getEndpoint(self, request):
         endpointId = request['endpoint']['endpointId']
-        _LOGGER.error("Handler getEndpoint %s", endpointId)
         items = endpointId.split("-")
         className = items[0]
         id = items[1]
