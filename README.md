@@ -14,6 +14,11 @@ You must have or create an Amazon Developer Account and an Amazon Web Service ac
 
 Create a Smart Home skill in Amazon Devleoper Account with an associated Lambda in your Amazon Web Service account
 
+```sh
+git clone git@github.com:rimram31/dz_smarthome.git
+cd dz_smartome
+```
+
 Fill your ```configdz.json``` file
 ```sh
 cp configdz-template.json configdz.json
