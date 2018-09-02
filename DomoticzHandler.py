@@ -118,11 +118,21 @@ class SwitchLightAlexaEndpoint(OnOffAlexaEndpoint):
 
 @ENDPOINT_ADAPTERS.register('Blind')
 class BlindAlexaEndpoint(OnOffAlexaEndpoint):
-    pass
 
-@ENDPOINT_ADAPTERS.register('RFI')
+    def turnOn(self):
+        self.handler.setSwitch(self._endpointId, 'Off')
+
+    def turnOff(self):
+        self.handler.setSwitch(self._endpointId, 'On')
+
+@ENDPOINT_ADAPTERS.register('RFY')
 class RFIAlexaEndpoint(OnOffAlexaEndpoint):
-    pass
+
+    def turnOn(self):
+        self.handler.setSwitch(self._endpointId, 'Off')
+
+    def turnOff(self):
+        self.handler.setSwitch(self._endpointId, 'On')
 
 class LockableAlexaEndpoint(DomoticzEndpoint):
     def __init__(self, endpointId, friendlyName="", description="", manufacturerName=""):
@@ -278,9 +288,9 @@ class Domoticz(object):
                         endpoint.addCapability(AlexaColorController(self, 'Alexa.ColorController'))              
                         endpoint.addCapability(AlexaColorTemperatureController(self, 'Alexa.ColorTemperatureController'))              
 
-            elif (devType.startswith('Blind') or devType.startswith('RFI')):
+            elif (devType.startswith('Blind') or devType.startswith('RFY')):
                 if   devType.startswith('Blind'): endpoint = BlindAlexaEndpoint("Blind-"+endpointId, friendlyName, description, manufacturerName)
-                elif devType.startswith('RFI'):   endpoint = RFIAlexaEndpoint("RFI-"+endpointId, friendlyName, description, manufacturerName)
+                elif devType.startswith('RFY'):   endpoint = RFIAlexaEndpoint("RFY-"+endpointId, friendlyName, description, manufacturerName)
                 endpoint.addDisplayCategories("SWITCH")
 
             elif (devType.startswith('Lock') or devType.startswith('Contact')):
@@ -380,3 +390,4 @@ def color_hsb_to_RGB(fH: float, fS: float, fB: float) -> Tuple[int, int, int]:
         b = int(q * 255)
 
     return (r, g, b)
+
