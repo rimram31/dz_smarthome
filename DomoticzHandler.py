@@ -1,4 +1,4 @@
-import json, urllib, ssl, base64
+import os, json, urllib, ssl, base64
 from urllib.request import urlopen, Request
 import re
 from AlexaSmartHome import *
@@ -118,21 +118,11 @@ class SwitchLightAlexaEndpoint(OnOffAlexaEndpoint):
 
 @ENDPOINT_ADAPTERS.register('Blind')
 class BlindAlexaEndpoint(OnOffAlexaEndpoint):
+    pass
 
-    def turnOn(self):
-        self.handler.setSwitch(self._endpointId, 'Off')
-
-    def turnOff(self):
-        self.handler.setSwitch(self._endpointId, 'On')
-
-@ENDPOINT_ADAPTERS.register('RFY')
+@ENDPOINT_ADAPTERS.register('RFI')
 class RFIAlexaEndpoint(OnOffAlexaEndpoint):
-
-    def turnOn(self):
-        self.handler.setSwitch(self._endpointId, 'Off')
-
-    def turnOff(self):
-        self.handler.setSwitch(self._endpointId, 'On')
+    pass
 
 class LockableAlexaEndpoint(DomoticzEndpoint):
     def __init__(self, endpointId, friendlyName="", description="", manufacturerName=""):
@@ -190,7 +180,7 @@ class SelectorThermostatAlexaEndpoint(DomoticzEndpoint):
 class Domoticz(object):
 
     def __init__(self,url,username=None,password=None):
-        self.url = url
+        self.url = os.path.join(url, '')
 
         if url.startswith("https"):
             context = ssl.create_default_context()
@@ -207,7 +197,7 @@ class Domoticz(object):
             self.authorization = b'Basic ' + encoded_credentials
 
     def api(self, query):
-        url = self.url + "/json.htm?" + query
+        url = self.url + "json.htm?" + query
         _LOGGER.debug("Domoticz API call %s", url)
         headers = { 'Content-Type': 'application/json' }
         if self.authorization is not None:
@@ -288,9 +278,9 @@ class Domoticz(object):
                         endpoint.addCapability(AlexaColorController(self, 'Alexa.ColorController'))              
                         endpoint.addCapability(AlexaColorTemperatureController(self, 'Alexa.ColorTemperatureController'))              
 
-            elif (devType.startswith('Blind') or devType.startswith('RFY')):
+            elif (devType.startswith('Blind') or devType.startswith('RFI')):
                 if   devType.startswith('Blind'): endpoint = BlindAlexaEndpoint("Blind-"+endpointId, friendlyName, description, manufacturerName)
-                elif devType.startswith('RFY'):   endpoint = RFIAlexaEndpoint("RFY-"+endpointId, friendlyName, description, manufacturerName)
+                elif devType.startswith('RFI'):   endpoint = RFIAlexaEndpoint("RFI-"+endpointId, friendlyName, description, manufacturerName)
                 endpoint.addDisplayCategories("SWITCH")
 
             elif (devType.startswith('Lock') or devType.startswith('Contact')):
