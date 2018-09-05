@@ -1,7 +1,8 @@
 import json
 import logging
+from pathlib import Path
 
-import AlexaSmartHome, DomoticzHandler
+import AlexaSmartHome, DomoticzHandler, OktaAPI
 
 logger = logging.getLogger()
 
@@ -35,13 +36,26 @@ class Configuration(object):
         return json.dumps(self.opts, indent=2, separators=(',', ': '))
 
 def event_handler(request, context):
+
+    logger.debug("Lambda invocation %s", repr(request))
+
     config = Configuration('configdz.json')
     if config.debug:
         logger.setLevel(logging.DEBUG)
 
-    logger.debug("Lambda invocation %s", repr(request))
-    dzRemote = DomoticzHandler.Domoticz(config.url, config.username, config.password)
+    oktaConfig = Path("config-otka.json")
+    if oktaConfig.exists():
+        with open("config-otka.json") as f:
+            oktaJson = json.load(f)
+        okta = OktaAPI.Okta(oktaJson['endpoint'], oktaJson['api_key'])
+        token = request['directive']['payload']['scope']['token']
+        profile = okta.userProfile(token)
+        dzRemote = DomoticzHandler.Domoticz(profile['domoticz_url'], profile['domoticz_username'], profile['domoticz_password'])
+    else:
+        dzRemote = DomoticzHandler.Domoticz(config.url, config.username, config.password)
+
     response =  AlexaSmartHome.handle_message(dzRemote, request)
+
     logger.debug("Skill response %s", response)
 
     return response
