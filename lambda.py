@@ -20,6 +20,7 @@ class Configuration(object):
         opts['url'] = self.get(['url'], default='http://localhost:8080/')
         opts['username'] = self.get(['username'], default='')
         opts['password'] = self.get(['password'], default='')
+        opts['planID'] = self.get(['planID'], default=None)
         opts['debug'] = self.get(['debug'], default=False)
         self.opts = opts
 
@@ -43,16 +44,25 @@ def event_handler(request, context):
     if config.debug:
         logger.setLevel(logging.DEBUG)
 
+    dzRemote = None
     oktaConfig = Path("config-otka.json")
     if oktaConfig.exists():
         with open("config-otka.json") as f:
             oktaJson = json.load(f)
         okta = OktaAPI.Okta(oktaJson['endpoint'], oktaJson['api_key'])
-        token = request['directive']['payload']['scope']['token']
-        profile = okta.userProfile(token)
-        dzRemote = DomoticzHandler.Domoticz(profile['domoticz_url'], profile['domoticz_username'], profile['domoticz_password'])
+        if 'scope' in request['directive']['payload']:
+            token = request['directive']['payload']['scope']['token']
+        elif 'scope' in request['directive']['endpoint']:
+            token = request['directive']['endpoint']['scope']['token']
+        try: 
+            profile = okta.userProfile(token)
+            dzRemote = DomoticzHandler.Domoticz(profile['domoticz_url'], profile['domoticz_username'], profile['domoticz_password'])
+        except: pass
     else:
         dzRemote = DomoticzHandler.Domoticz(config.url, config.username, config.password)
+
+    if config.planID is not None:
+        dzRemote.setPlanID(config.planID)
 
     response =  AlexaSmartHome.handle_message(dzRemote, request)
 

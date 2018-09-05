@@ -1,0 +1,2 @@
+rm lambdaOtka.zip
+zip -r lambdaOtka.zip configdz.json config-otka.json lambda.py AlexaSmartHome.py DomoticzHandler.py OktaAPI.py
