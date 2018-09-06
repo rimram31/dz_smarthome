@@ -206,6 +206,11 @@ class Domoticz(object):
             encoded_credentials = base64.b64encode(credentials.encode())
             self.authorization = b'Basic ' + encoded_credentials
 
+        self.planID = None
+
+    def setPlanID(self, planID):
+        self.planID = planID
+
     def api(self, query):
         url = self.url + "json.htm?" + query
         _LOGGER.debug("Domoticz API call %s", url)
@@ -238,7 +243,9 @@ class Domoticz(object):
         devices= response['result']
         for device in devices:
             endpoint = None
+
             if (device['PlanID'] == "0" or device['PlanID'] == ""): continue
+            if (self.planID is not None) and (not (self.planID in device['PlanIDs'])) : continue
 
             devType = device['Type']
 
@@ -262,7 +269,7 @@ class Domoticz(object):
                 elif devType.startswith('Group'): endpoint = GroupAlexaEndpoint('Group-'+endpointId, friendlyName, description, manufacturerName)
                 endpoint.addDisplayCategories("SCENE_TRIGGER")
 
-            elif (devType.startswith('Light')):
+            elif (devType.startswith('Light') or devType.startswith('Color Switch')):
                 switchType = device['SwitchType']
                 # Special case to implement a "virtual thermostat"
                 if switchType == 'Selector' and (extra is not None):
