@@ -19,6 +19,9 @@ class Configuration(object):
         opts['url'] = self.get(['url'], default='http://localhost:8080/')
         opts['username'] = self.get(['username'], default='')
         opts['password'] = self.get(['password'], default='')
+        opts['includeScenesGroups'] = self.get(['includeScenesGroups'], default=False)
+        opts['planID'] = self.get(['planID'], default=None)
+        opts['prefixName'] = self.get(['prefixName'], default=None)
         opts['debug'] = self.get(['debug'], default=False)
         self.opts = opts
 
@@ -40,8 +43,11 @@ def event_handler(request, context):
         logger.setLevel(logging.DEBUG)
 
     logger.debug("Lambda invocation %s", repr(request))
+
     dzRemote = DomoticzHandler.Domoticz(config.url, config.username, config.password)
+    dzRemote.configure(config)
     response =  AlexaSmartHome.handle_message(dzRemote, request)
+
     logger.debug("Skill response %s", response)
 
     return response

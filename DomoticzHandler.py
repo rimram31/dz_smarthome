@@ -6,6 +6,8 @@ from AlexaSmartHome import *
 import math, colorsys
 import logging
 
+SKILL_NAME = 'Alexicz'
+
 ENDPOINT_ADAPTERS = Registry()
 
 _LOGGER = logging.getLogger(__name__)
@@ -81,12 +83,16 @@ class OnOffAlexaEndpoint(DomoticzEndpoint):
         self.handler.setSwitch(self._endpointId, 'Off')
 
 @ENDPOINT_ADAPTERS.register('Scene')
-class SceneAlexaEndpoint(OnOffAlexaEndpoint):
+class SceneAlexaEndpoint(DomoticzEndpoint):
 
-    def turnOn(self):
+    def __init__(self, endpointId, friendlyName="", description="", manufacturerName=""):
+        super().__init__(endpointId, friendlyName, description, manufacturerName)
+        self.addCapability(AlexaSceneController(self, 'Alexa.AlexaSceneController'))
+
+    def activate(self):
         self.handler.setSceneSwitch(self._endpointId, 'On')
 
-    def turnOff(self):
+    def deactivate(self):
         self.handler.setSceneSwitch(self._endpointId, 'Off')
 
 @ENDPOINT_ADAPTERS.register('Group')
@@ -186,7 +192,6 @@ class SelectorThermostatAlexaEndpoint(DomoticzEndpoint):
     def setThermostatMode(self, mode):
         self.handler.setLevelByName(self._endpointId, mode)
 
-
 class Domoticz(object):
 
     def __init__(self,url,username=None,password=None):
@@ -206,13 +211,20 @@ class Domoticz(object):
             encoded_credentials = base64.b64encode(credentials.encode())
             self.authorization = b'Basic ' + encoded_credentials
 
-        self.planID = None
+        self.planID = -1
+        self.includeScenesGroups = False
+        self.prefixName = None
+        self.config = None
 
-    def setPlanID(self, planID):
-        self.planID = planID
+    def configure(self, config):
+        self.includeScenesGroups = config.includeScenesGroups
+        self.planID = config.planID
+        self.prefixName = config.prefixName
+        self.config = config
 
     def api(self, query):
         url = self.url + "json.htm?" + query
+        print("Domoticz API call %s", url)
         _LOGGER.debug("Domoticz API call %s", url)
         headers = { 'Content-Type': 'application/json' }
         if self.authorization is not None:
@@ -239,13 +251,15 @@ class Domoticz(object):
 
     def getEndpoints(self):
         endpoints = []
+
+        # Devices
         response = self.api('type=devices&used=true')
         devices= response['result']
         for device in devices:
             endpoint = None
 
             if (device['PlanID'] == "0" or device['PlanID'] == ""): continue
-            if (self.planID is not None) and (not (self.planID in device['PlanIDs'])) : continue
+            if (self.planID >= 0 and (not (self.planID in device['PlanIDs']))): continue
 
             devType = device['Type']
 
@@ -256,20 +270,16 @@ class Domoticz(object):
 
             matchObj = re.match( r'.*Alexa_Name:\s*([^\n]*)', device['Description'], re.M|re.I|re.DOTALL)
             if matchObj:  friendlyName = matchObj.group(1)
-
             matchObj = re.match( r'.*Alexa_Description:\s*([^\n]*)', device['Description'], re.M|re.I|re.DOTALL)
             if matchObj:  description = matchObj.group(1)
-
             extra = None
             matchObj = re.match( r'.*Alexa_extra:\s*([^\n]*)', device['Description'], re.M|re.I|re.DOTALL)
             if matchObj:  extra = matchObj.group(1)
 
-            if (devType.startswith('Scene') or devType.startswith('Group')):
-                if devType.startswith('Scene')  : endpoint = SceneAlexaEndpoint('Scene-'+endpointId, friendlyName, description, manufacturerName)
-                elif devType.startswith('Group'): endpoint = GroupAlexaEndpoint('Group-'+endpointId, friendlyName, description, manufacturerName)
-                endpoint.addDisplayCategories("SCENE_TRIGGER")
+            if self.prefixName is not None:
+                friendlyName = self.prefixName + friendlyName
 
-            elif (devType.startswith('Light') or devType.startswith('Color Switch')):
+            if (devType.startswith('Light') or devType.startswith('Color Switch')):
                 switchType = device['SwitchType']
                 # Special case to implement a "virtual thermostat"
                 if switchType == 'Selector' and (extra is not None):
@@ -319,6 +329,43 @@ class Domoticz(object):
                     endpoint.addCookie({ "extra": extra} )
                 #print(endpoint.displayCategories())
                 endpoints.append(endpoint)
+
+        # Scenes/Groups
+        if self.includeScenesGroups:
+            response = self.api('type=scenes')
+            scenes= response['result']
+            for scene in scenes:
+                endpoint = None
+
+                sceneType = scene['Type']
+                friendlyName = scene['Name']
+                endpointId = scene['idx']
+                manufacturerName = SKILL_NAME
+                description = sceneType
+
+                matchObj = re.match( r'.*Alexa_Name:\s*([^\n]*)', scene['Description'], re.M|re.I|re.DOTALL)
+                if matchObj:  friendlyName = matchObj.group(1)
+                matchObj = re.match( r'.*Alexa_Description:\s*([^\n]*)', scene['Description'], re.M|re.I|re.DOTALL)
+                if matchObj:  description = matchObj.group(1)
+                extra = None
+                matchObj = re.match( r'.*Alexa_extra:\s*([^\n]*)', scene['Description'], re.M|re.I|re.DOTALL)
+                if matchObj:  extra = matchObj.group(1)
+
+                if self.prefixName is not None:
+                    friendlyName = self.prefixName + friendlyName
+
+                if (sceneType.startswith('Scene') or sceneType.startswith('Group')):
+                    if sceneType.startswith('Scene')  : 
+                        endpoint = SceneAlexaEndpoint('Scene-'+endpointId, friendlyName, description, manufacturerName)
+                        endpoint.addDisplayCategories("SCENE_TRIGGER")
+                    elif sceneType.startswith('Group'): 
+                        endpoint = GroupAlexaEndpoint('Group-'+endpointId, friendlyName, description, manufacturerName)
+                        endpoint.addDisplayCategories("SWITCH")
+
+                if (endpoint is not None):
+                    if extra is not None:
+                        endpoint.addCookie({ "extra": extra} )
+                    endpoints.append(endpoint)
 
         return endpoints
 

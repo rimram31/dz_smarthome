@@ -158,6 +158,19 @@ class AlexaSceneController(AlexaInterface):
     def name(self):
         return 'Alexa.SceneController'
 
+    def supportsDeactivation(self):
+        return False
+
+    def serializeDiscovery(self):
+        result = {
+            'type': 'AlexaInterface',
+            'interface': self.name(),
+            'version': self.version(),
+            'proactivelyReported': self.propertiesProactivelyReported(),
+            'supportsDeactivation': self.supportsDeactivation(),
+        }
+        return result
+
 @INTERFACES.register('Alexa.BrightnessController')
 class AlexaBrightnessController(AlexaInterface):
     def name(self):
@@ -435,6 +448,8 @@ class Alexa(object):
                 'timestamp': '%sZ' % (datetime.utcnow().isoformat(),)
             }
             _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            endpoint = self.handler.getEndpoint(request)
+            endpoint.activate()
             return api_message(request,
                 name='ActivationStarted', namespace='Alexa.SceneController',
                 payload=payload)
@@ -445,6 +460,8 @@ class Alexa(object):
                 'timestamp': '%sZ' % (datetime.utcnow().isoformat(),)
             }
             _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            endpoint = self.handler.getEndpoint(request)
+            endpoint.deactivate()
             return api_message(request,
                 name='DeactivationStarted', namespace='Alexa.SceneController',
                 payload=payload)

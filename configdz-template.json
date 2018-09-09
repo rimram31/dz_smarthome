@@ -2,5 +2,8 @@
     "url": "https://zzzz.ddns.net:51243",
     "username": "xxxx",
     "password": "yyyy",
+    "includeScenesGroups": false,
+    "prefixName": "",
+    "planID": -1,
     "debug": false
 }
