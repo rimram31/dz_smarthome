@@ -1,5 +1,10 @@
 #!/usr/bin/python3
 
+# Require python 3 and flask to be installed
+# sudo apt-get install python3 pip3
+# pip3 install flask
+# ... and perhaps some missings ...
+
 from flask import Flask, request
 from flask_restful import Resource, Api
 import json
