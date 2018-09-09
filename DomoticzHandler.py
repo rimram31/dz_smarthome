@@ -87,7 +87,7 @@ class SceneAlexaEndpoint(DomoticzEndpoint):
 
     def __init__(self, endpointId, friendlyName="", description="", manufacturerName=""):
         super().__init__(endpointId, friendlyName, description, manufacturerName)
-        self.addCapability(AlexaSceneController(self, 'Alexa.AlexaSceneController'))
+        self.addCapability(AlexaSceneController(self, 'Alexa.AlexaSceneController', deactivationSupported=False))
 
     def activate(self):
         self.handler.setSceneSwitch(self._endpointId, 'On')
@@ -96,13 +96,11 @@ class SceneAlexaEndpoint(DomoticzEndpoint):
         self.handler.setSceneSwitch(self._endpointId, 'Off')
 
 @ENDPOINT_ADAPTERS.register('Group')
-class GroupAlexaEndpoint(OnOffAlexaEndpoint):
+class GroupAlexaEndpoint(SceneAlexaEndpoint):
 
-    def turnOn(self):
-        self.handler.setSceneSwitch(self._endpointId, 'On')
-
-    def turnOff(self):
-        self.handler.setSceneSwitch(self._endpointId, 'Off')
+    def __init__(self, endpointId, friendlyName="", description="", manufacturerName=""):
+        super().__init__(endpointId, friendlyName, description, manufacturerName)
+        self.addCapability(AlexaSceneController(self, 'Alexa.AlexaSceneController', deactivationSupported=True))
 
 @ENDPOINT_ADAPTERS.register('SwitchLight')
 class SwitchLightAlexaEndpoint(OnOffAlexaEndpoint):
@@ -360,7 +358,7 @@ class Domoticz(object):
                         endpoint.addDisplayCategories("SCENE_TRIGGER")
                     elif sceneType.startswith('Group'): 
                         endpoint = GroupAlexaEndpoint('Group-'+endpointId, friendlyName, description, manufacturerName)
-                        endpoint.addDisplayCategories("SWITCH")
+                        endpoint.addDisplayCategories("SCENE_TRIGGER")
 
                 if (endpoint is not None):
                     if extra is not None:

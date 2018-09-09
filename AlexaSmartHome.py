@@ -70,13 +70,14 @@ class AlexaEndpoint(object):
 
 class AlexaInterface:
 
-    def __init__(self, endpoint, name = 'Alexa', properties = [], proactivelyReported = True, retrievable = True):
+    def __init__(self, endpoint, name = 'Alexa', properties = [], proactivelyReported = True, retrievable = True, modesSupported = None, deactivationSupported = None):
         self._endpoint = endpoint
         self._name = name
         self._properties = properties
         self._proactivelyReported = proactivelyReported
         self._retrievable = retrievable
-        self._modesSupported = None
+        self._modesSupported = modesSupported
+        self._deactivationSupported = deactivationSupported
 
     def name(self):
         return self._name
@@ -94,7 +95,7 @@ class AlexaInterface:
         return self._retrievable
 
     def supportsDeactivation(self):
-        return None
+        return self._deactivationSupported
 
     def configuration(self):
         return None
@@ -157,9 +158,6 @@ class AlexaLockController(AlexaInterface):
 class AlexaSceneController(AlexaInterface):
     def name(self):
         return 'Alexa.SceneController'
-
-    def supportsDeactivation(self):
-        return False
 
     def serializeDiscovery(self):
         result = {
