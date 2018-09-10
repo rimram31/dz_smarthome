@@ -46,6 +46,11 @@ class DomoticzEndpoint(AlexaEndpoint):
             level = device['Level']
             maxLevel = device['MaxDimLevel']
             return int((float(level) * 100) / float(maxLevel))
+        elif name == 'colorTemperature':
+            level = device['Level']
+            maxLevel = device['MaxDimLevel']
+            # Value to be returned 1000 to 10.000
+            return 1000 + 9000 * (float(level) / float(maxLevel))
         elif name == 'temperature':
             if isinstance(self, ThermostatAlexaEndpoint):
                 temp = device['SetPoint']
@@ -130,7 +135,7 @@ class BlindAlexaEndpoint(OnOffAlexaEndpoint):
         self.handler.setSwitch(self._endpointId, 'On')
 
 @ENDPOINT_ADAPTERS.register('RFY')
-class RFIAlexaEndpoint(OnOffAlexaEndpoint):
+class RFYAlexaEndpoint(OnOffAlexaEndpoint):
 
     def turnOn(self):
         self.handler.setSwitch(self._endpointId, 'Off')
@@ -305,7 +310,7 @@ class Domoticz(object):
 
             elif (devType.startswith('Blind') or devType.startswith('RFY')):
                 if   devType.startswith('Blind'): endpoint = BlindAlexaEndpoint("Blind-"+endpointId, friendlyName, description, manufacturerName)
-                elif devType.startswith('RFY'):   endpoint = RFIAlexaEndpoint("RFY-"+endpointId, friendlyName, description, manufacturerName)
+                elif devType.startswith('RFY'):   endpoint = RFYAlexaEndpoint("RFY-"+endpointId, friendlyName, description, manufacturerName)
                 endpoint.addDisplayCategories("SWITCH")
 
             elif (devType.startswith('Lock') or devType.startswith('Contact')):

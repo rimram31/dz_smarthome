@@ -423,19 +423,17 @@ class Alexa(object):
             return api_message(request)
 
         def DecreaseColorTemperature(self, request):
-            ##current = int(entity.attributes.get(light.ATTR_COLOR_TEMP))
-            ##max_mireds = int(entity.attributes.get(light.ATTR_MAX_MIREDS))
-            ##value = min(max_mireds, current + 50)
-            _LOGGER.debug("Request %s/%s", 
+            _LOGGER.debug("Request %s/%s",
                         request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            kelvin = endpoint.getProperty('colorTemperature') - 500
+            endpoint.setColorTemperature(kelvin)
             return api_message(request)
 
         def IncreaseColorTemperature(self, request):
-            ##current = int(entity.attributes.get(light.ATTR_COLOR_TEMP))
-            ##max_mireds = int(entity.attributes.get(light.ATTR_MAX_MIREDS))
-            ##value = min(max_mireds, current - 50)
-            _LOGGER.debug("Request %s/%s", 
+            _LOGGER.debug("Request %s/%s",
                         request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            kelvin = endpoint.getProperty('colorTemperature') + 500
+            endpoint.setColorTemperature(kelvin)
             return api_message(request)
 
     class SceneController(AlexaSmartHomeCall):
