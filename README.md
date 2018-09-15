@@ -4,7 +4,7 @@
 
 Very first version of this skill.
 
-This skill is inspired from madgeni skill [madgeni alexa domo skill](https://github.com/madgeni/alexa_domo) and also keep some code skeleton from [Home Assistant Alexa code](https://github.com/home-assistant/home-assistant)
+This skill is inspired from madgeni skill [madgeni alexa domo skill](https://github.com/madgeni/alexa_domo) and also get some code skeleton from [Home Assistant Alexa code](https://github.com/home-assistant/home-assistant)
 
 Only devices in plan will be declared to Alexa, you can set a frendly Alexa name using Alexa_name = ... in the device description field.
 
