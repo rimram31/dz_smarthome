@@ -134,6 +134,9 @@ class BlindAlexaEndpoint(OnOffAlexaEndpoint):
     def turnOff(self):
         self.handler.setSwitch(self._endpointId, 'On')
 
+    def setPercentage(self, percentage):
+        self.handler.setLevel(self._endpointId, percentage)
+
 @ENDPOINT_ADAPTERS.register('RFY')
 class RFYAlexaEndpoint(OnOffAlexaEndpoint):
 
@@ -142,6 +145,9 @@ class RFYAlexaEndpoint(OnOffAlexaEndpoint):
 
     def turnOff(self):
         self.handler.setSwitch(self._endpointId, 'On')
+
+    def setPercentage(self, percentage):
+        self.handler.setLevel(self._endpointId, percentage)
 
 class LockableAlexaEndpoint(DomoticzEndpoint):
     def __init__(self, endpointId, friendlyName="", description="", manufacturerName=""):
@@ -246,6 +252,8 @@ class Domoticz(object):
             endpoint.addCapability(AlexaBrightnessController(endpoint, 'Alexa.BrightnessController',[{'name': 'brightness'}]))
             endpoint.addCapability(AlexaColorController(endpoint, 'Alexa.ColorController'))
             endpoint.addCapability(AlexaColorTemperatureController(endpoint, 'Alexa.ColorTemperatureController'))
+        elif className == 'Blind' or className == 'RFY':
+            endpoint.addCapability(AlexaPercentageController(endpoint, 'Alexa.PercentageController',[{'name': 'percentage'}]))
         cookies = request['endpoint']['cookie']
         if cookies is not None:
             endpoint.addCookie(cookies)
@@ -312,6 +320,9 @@ class Domoticz(object):
                 if   devType.startswith('Blind'): endpoint = BlindAlexaEndpoint("Blind-"+endpointId, friendlyName, description, manufacturerName)
                 elif devType.startswith('RFY'):   endpoint = RFYAlexaEndpoint("RFY-"+endpointId, friendlyName, description, manufacturerName)
                 endpoint.addDisplayCategories("SWITCH")
+                hasDimmer = device['HaveDimmer']
+                if (hasDimmer):
+                    endpoint.addCapability(AlexaPercentageController(self, 'Alexa.PercentageController',[{'name': 'percentage'}]))
 
             elif (devType.startswith('Lock') or devType.startswith('Contact')):
                 if   devType.startswith('Lock'):    endpoint = LockAlexaEndpoint("Lock-"+endpointId, friendlyName, description, manufacturerName)
