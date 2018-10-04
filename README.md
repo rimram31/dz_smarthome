@@ -4,9 +4,9 @@
 
 Very first version of this skill.
 
-This skill is inspired from madgeni skill [madgeni alexa domo skill](https://github.com/madgeni/alexa_domo) and also keep some code skeleton from [Home Assistant Alexa code](https://github.com/home-assistant/home-assistant)
+This skill is inspired from madgeni skill [madgeni alexa domo skill](https://github.com/madgeni/alexa_domo) and also get some code skeleton from [Home Assistant Alexa code](https://github.com/home-assistant/home-assistant)
 
-Only devices in plan will be declared to Alexa, you can set a frendly Alexa name using Alexa_name = ... in the device description field.
+Only devices in plan will be declared to Alexa, you can set a friendly Alexa name using Alexa_name = ... in the device description field.
 
 ## Installing the skill
 
@@ -31,4 +31,6 @@ Build the lambda zip file
 ```
 This will create the zip code file to be uploaded for the lambda (require a Python 3.6 engine, handler name is ```lambda.event_handler```)
 
-To help to make some tests, it would be good to put the device in a 'well reconized' (voice) group.
+To help to make some tests, it would be good to put the device in a 'well recognized' (voice) group.
+
+Thanks to Damsee to provide a very good documentation, the one provided here

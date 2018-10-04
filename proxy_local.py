@@ -1,5 +1,10 @@
 #!/usr/bin/python3
 
+#
+# This source is provided for tests purpose
+# You can run a local web server answering tests Alexa queries (Postman for example)
+# Requests are forwarded to AlexaSmartHome handler, the same used by the final lambda
+#
 # Require python 3 and flask to be installed
 # sudo apt-get install python3 pip3
 # pip3 install flask
