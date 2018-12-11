@@ -72,7 +72,12 @@ class DomoticzEndpoint(AlexaEndpoint):
                 levels = device['LevelNames'].split("|")
                 mode = levels[ilevel].upper()
                 return mode
-
+        elif name == 'detectionState':
+            if device['Status'] == 'Closed':
+                return 'NOT_DETECTED'
+            else:
+                return 'DETECTED'
+            return 'JAMMED'
         return None
 
 class OnOffAlexaEndpoint(DomoticzEndpoint):
@@ -159,12 +164,14 @@ class LockAlexaEndpoint(LockableAlexaEndpoint):
     pass
 
 @ENDPOINT_ADAPTERS.register('Contact')
-class ContactAlexaEndpoint(LockableAlexaEndpoint):
-    pass
+class ContactAlexaEndpoint(DomoticzEndpoint):
+    def __init__(self, endpointId, friendlyName="", description="", manufacturerName=""):
+        super().__init__(endpointId, friendlyName, description, manufacturerName)
+        self.addCapability(AlexaContactSensor(self, 'Alexa.ContactSensor',[{'name': 'detectionState'}]))
 
 @ENDPOINT_ADAPTERS.register('TemperatureSensor')
 class TemperatureSensorAlexaEndpoint(DomoticzEndpoint):
-    
+
     def __init__(self, endpointId, friendlyName="", description="", manufacturerName=""):
         super().__init__(endpointId, friendlyName, description, manufacturerName)
         self.addCapability(AlexaTemperatureSensor(self, 'Alexa.TemperatureSensor',[{'name': 'temperature'}]))
@@ -290,18 +297,42 @@ class Domoticz(object):
             if self.prefixName is not None:
                 friendlyName = self.prefixName + friendlyName
 
-            if (devType.startswith('Light') or devType.startswith('Color Switch')):
+            if (devType.startswith('Lighting') or devType.startswith('Color Switch')):
+                switchType = device['SwitchType']
+                if switchType == 'On/Off':
+                    # Usual switch case
+                    endpoint = SwitchLightAlexaEndpoint("SwitchLight-"+endpointId, friendlyName, description, manufacturerName)
+                    endpoint.addDisplayCategories("SWITCH")
+                    hasDimmer = device['HaveDimmer']
+                    if (hasDimmer):
+                        endpoint.addCapability(AlexaPercentageController(self, 'Alexa.PercentageController',[{'name': 'percentage'}]))
+                        endpoint.addCapability(AlexaBrightnessController(self, 'Alexa.BrightnessController',[{'name': 'brightness'}]))
+                else:
+                    # Usual switch case
+                    endpoint = SwitchLightAlexaEndpoint("SwitchLight-"+endpointId, friendlyName, description, manufacturerName)
+                    endpoint.addDisplayCategories("LIGHT")
+                    hasDimmer = device['HaveDimmer']
+                    if (hasDimmer):
+                        endpoint.addCapability(AlexaPercentageController(self, 'Alexa.PercentageController',[{'name': 'percentage'}]))
+                        endpoint.addCapability(AlexaBrightnessController(self, 'Alexa.BrightnessController',[{'name': 'brightness'}]))              
+                    subType = device['SubType']
+                    if (subType.startswith("RGB")):
+                        endpoint.addCapability(AlexaColorController(self, 'Alexa.ColorController'))              
+                        endpoint.addCapability(AlexaColorTemperatureController(self, 'Alexa.ColorTemperatureController'))
+
+            elif (devType.startswith('Light/Switch')):
                 switchType = device['SwitchType']
                 # Special case to implement a "virtual thermostat"
                 if switchType == 'Selector' and (extra is not None):
                     # extra must contain { "OFF": 0, CONFORT": idx, "ECONOMIE"; idx...}
                     endpoint = ThermostatAlexaEndpoint("SelectorThermostat-"+endpointId, friendlyName, description, manufacturerName)
                     endpoint.addDisplayCategories("THERMOSTAT")
-                elif (switchType.startswith('Door') or switchType.startswith('Contact')):
-                    if   switchType.startswith('Door'):    endpoint = LockAlexaEndpoint("Lock-"+endpointId, friendlyName, description, manufacturerName)
-                    elif switchType.startswith('Contact'): endpoint = ContactAlexaEndpoint("Contact-"+endpointId, friendlyName, description, manufacturerName)
-                    if endpoint is not None:
-                        endpoint.addDisplayCategories("SWITCH")
+                elif (switchType.startswith('Door')):
+                    endpoint = LockAlexaEndpoint("Lock-"+endpointId, friendlyName, description, manufacturerName)
+                    endpoint.addDisplayCategories("SWITCH")
+                elif (switchType.startswith('Contact')):
+                    endpoint = ContactAlexaEndpoint("Contact-"+endpointId, friendlyName, description, manufacturerName)
+                    endpoint.addDisplayCategories("CONTACT_SENSOR")
                 else:
                     # Usual switch case
                     endpoint = SwitchLightAlexaEndpoint("SwitchLight-"+endpointId, friendlyName, description, manufacturerName)
@@ -314,7 +345,7 @@ class Domoticz(object):
                     if (subType.startswith("RGB")):
                         endpoint.addDisplayCategories("LIGHT")
                         endpoint.addCapability(AlexaColorController(self, 'Alexa.ColorController'))              
-                        endpoint.addCapability(AlexaColorTemperatureController(self, 'Alexa.ColorTemperatureController'))              
+                        endpoint.addCapability(AlexaColorTemperatureController(self, 'Alexa.ColorTemperatureController')) 						
 
             elif (devType.startswith('Blind') or devType.startswith('RFY')):
                 if   devType.startswith('Blind'): endpoint = BlindAlexaEndpoint("Blind-"+endpointId, friendlyName, description, manufacturerName)
@@ -324,10 +355,13 @@ class Domoticz(object):
                 if (hasDimmer):
                     endpoint.addCapability(AlexaPercentageController(self, 'Alexa.PercentageController',[{'name': 'percentage'}]))
 
-            elif (devType.startswith('Lock') or devType.startswith('Contact')):
-                if   devType.startswith('Lock'):    endpoint = LockAlexaEndpoint("Lock-"+endpointId, friendlyName, description, manufacturerName)
-                elif devType.startswith('Contact'): endpoint = ContactAlexaEndpoint("Contact-"+endpointId, friendlyName, description, manufacturerName)
+            elif (devType.startswith('Lock')):
+                endpoint = LockAlexaEndpoint("Lock-"+endpointId, friendlyName, description, manufacturerName)
                 endpoint.addDisplayCategories("SWITCH")
+
+            elif (devType.startswith('Contact')):
+                endpoint = ContactAlexaEndpoint("Contact-"+endpointId, friendlyName, description, manufacturerName)
+                endpoint.addDisplayCategories("CONTACT_SENSOR")
 
             elif (devType.startswith('Temp')):
                 endpoint = TemperatureSensorAlexaEndpoint("TemperatureSensor-"+endpointId, friendlyName, description, manufacturerName)

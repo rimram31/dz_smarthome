@@ -237,6 +237,14 @@ class AlexaThermostatController(AlexaInterface):
             }
         return configuration
 
+@INTERFACES.register('Alexa.ContactSensor')
+class AlexaContactSensor(AlexaInterface):
+    def name(self):
+        return 'Alexa.ContactSensor'
+
+    def propertiesSupported(self):
+        return [{'name': 'detectionState'}]
+
 API_DIRECTIVE = 'directive'
 API_ENDPOINT = 'endpoint'
 API_EVENT = 'event'
