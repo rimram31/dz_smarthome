@@ -295,7 +295,8 @@ class Domoticz(object):
             if matchObj:  extra = matchObj.group(1)
 
             if self.prefixName is not None:
-                friendlyName = self.prefixName + friendlyName
+                #friendlyName = self.prefixName + friendlyName
+                description = self.prefixName + description
 
             if (devType.startswith('Lighting') or devType.startswith('Color Switch')):
                 switchType = device['SwitchType']
@@ -330,7 +331,7 @@ class Domoticz(object):
                 elif (switchType.startswith('Door')):
                     endpoint = LockAlexaEndpoint("Lock-"+endpointId, friendlyName, description, manufacturerName)
                     endpoint.addDisplayCategories("SWITCH")
-                elif (switchType.startswith('Contact')):
+                elif (switchType.startswith('Contact') or switchType.startswith('Motion Sensor')):
                     endpoint = ContactAlexaEndpoint("Contact-"+endpointId, friendlyName, description, manufacturerName)
                     endpoint.addDisplayCategories("CONTACT_SENSOR")
                 else:
