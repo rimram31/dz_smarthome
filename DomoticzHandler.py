@@ -282,6 +282,9 @@ class Domoticz(object):
             devType = device['Type']
 
             friendlyName = device['Name']
+            # philchillbill note
+            if friendlyName.startswith("$"):
+                friendlyName=friendlyName[1:]            
             endpointId = device['idx']
             manufacturerName = device['HardwareName']
             description = devType
@@ -304,7 +307,7 @@ class Domoticz(object):
                     # Usual switch case
                     endpoint = SwitchLightAlexaEndpoint("SwitchLight-"+endpointId, friendlyName, description, manufacturerName)
                     endpoint.addDisplayCategories("SWITCH")
-                    hasDimmer = device['HaveDimmer']
+                    hasDimmer = deviceHasDimmer(device)
                     if (hasDimmer):
                         endpoint.addCapability(AlexaPercentageController(self, 'Alexa.PercentageController',[{'name': 'percentage'}]))
                         endpoint.addCapability(AlexaBrightnessController(self, 'Alexa.BrightnessController',[{'name': 'brightness'}]))
@@ -312,7 +315,7 @@ class Domoticz(object):
                     # Usual switch case
                     endpoint = SwitchLightAlexaEndpoint("SwitchLight-"+endpointId, friendlyName, description, manufacturerName)
                     endpoint.addDisplayCategories("LIGHT")
-                    hasDimmer = device['HaveDimmer']
+                    hasDimmer = deviceHasDimmer(device)
                     if (hasDimmer):
                         endpoint.addCapability(AlexaPercentageController(self, 'Alexa.PercentageController',[{'name': 'percentage'}]))
                         endpoint.addCapability(AlexaBrightnessController(self, 'Alexa.BrightnessController',[{'name': 'brightness'}]))              
@@ -338,7 +341,7 @@ class Domoticz(object):
                     # Usual switch case
                     endpoint = SwitchLightAlexaEndpoint("SwitchLight-"+endpointId, friendlyName, description, manufacturerName)
                     endpoint.addDisplayCategories("SWITCH")
-                    hasDimmer = device['HaveDimmer']
+                    hasDimmer = deviceHasDimmer(device)
                     if (hasDimmer):
                         endpoint.addCapability(AlexaPercentageController(self, 'Alexa.PercentageController',[{'name': 'percentage'}]))
                         endpoint.addCapability(AlexaBrightnessController(self, 'Alexa.BrightnessController',[{'name': 'brightness'}]))              
@@ -352,7 +355,7 @@ class Domoticz(object):
                 if   devType.startswith('Blind'): endpoint = BlindAlexaEndpoint("Blind-"+endpointId, friendlyName, description, manufacturerName)
                 elif devType.startswith('RFY'):   endpoint = RFYAlexaEndpoint("RFY-"+endpointId, friendlyName, description, manufacturerName)
                 endpoint.addDisplayCategories("SWITCH")
-                hasDimmer = device['HaveDimmer']
+                hasDimmer = deviceHasDimmer(device)
                 if (hasDimmer):
                     endpoint.addCapability(AlexaPercentageController(self, 'Alexa.PercentageController',[{'name': 'percentage'}]))
 
@@ -453,6 +456,10 @@ class Domoticz(object):
 
     def setSceneSwitch(self, idx, value):
         self.api('type=command&param=switchscene&idx=%s&switchcmd=%s'%(idx,value))
+
+# philchillbill comment
+def deviceHasDimmer(device):
+    return (device['HaveDimmer'] and (device['DimmerType'] != 'none')) or device['SwitchType'].endswith('Percentage')
 
 def color_hsb_to_RGB(fH: float, fS: float, fB: float) -> Tuple[int, int, int]:
     """Convert a hsb into its rgb representation."""
