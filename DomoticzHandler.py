@@ -459,7 +459,8 @@ class Domoticz(object):
 
 # philchillbill comment
 def deviceHasDimmer(device):
-    return (device['HaveDimmer'] and (device['DimmerType'] != 'none')) or device['SwitchType'].endswith('Percentage')
+    #return (device['HaveDimmer'] and (device['DimmerType'] != 'none')) or device['SwitchType'].endswith('Percentage')
+    return device['HaveDimmer']
 
 def color_hsb_to_RGB(fH: float, fS: float, fB: float) -> Tuple[int, int, int]:
     """Convert a hsb into its rgb representation."""
