@@ -34,3 +34,7 @@ This will create the zip code file to be uploaded for the lambda (require a Pyth
 To help to make some tests, it would be good to put the device in a 'well recognized' (voice) group.
 
 Thanks to Damsee to provide a very good documentation, the one provided here
+
+## Help for development
+
+I've add ```proxy_local.py``` source code I'm using to develop this skill which is only for development purpose. It run a local (flask) python server handling Smart Home Alexa API calls and running Alexicz code. Used with [Alexa Smart Home Proxy](https://github.com/rimram31/alexa_smarthome), you get the same behaviour except that all teh Smart Home API work is done locally (and can be debug easily).
