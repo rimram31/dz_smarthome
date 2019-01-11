@@ -123,12 +123,13 @@ class SwitchLightAlexaEndpoint(OnOffAlexaEndpoint):
 
     def setColor(self, hue, saturation, brigthness):
         rgb = color_hsb_to_RGB(hue, saturation, brigthness)
-        self.handler.setColor(self._endpointId, rgb, int (100*brigthness))
+        device = self.getDevice()
+        self.handler.setColor(self._endpointId, rgb, device['Level'])
 
     def setColorTemperature(self, kelvin):
-        # !! Convert 1000 to 10000 => 0..100 for dz :-) 
-        dzKelvin = ((kelvin - 1000) * 100) / 10000
-        self.handler.setKelvinLevel(self._endpointId, dzKelvin)
+        rgb = convert_K_to_RGB(kelvin)
+        device = self.getDevice()
+        self.handler.setColor(self._endpointId, rgb, device['Level'])
 
 @ENDPOINT_ADAPTERS.register('Blind')
 class BlindAlexaEndpoint(OnOffAlexaEndpoint):
@@ -502,3 +503,62 @@ def color_hsb_to_RGB(fH: float, fS: float, fB: float) -> Tuple[int, int, int]:
 
     return (r, g, b)
 
+def convert_K_to_RGB(colour_temperature):
+    """
+    Converts from K to RGB, algorithm courtesy of 
+    https://gist.github.com/petrklus/b1f427accdf7438606a6 and
+    http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code/
+    """
+    #range check
+    if colour_temperature < 1000: 
+        colour_temperature = 1000
+    elif colour_temperature > 40000:
+        colour_temperature = 40000
+    
+    tmp_internal = colour_temperature / 100.0
+    
+    # red 
+    if tmp_internal <= 66:
+        r = int(255)
+    else:
+        tmp_red = 329.698727446 * math.pow(tmp_internal - 60, -0.1332047592)
+        if tmp_red < 0:
+            r = int(0)
+        elif tmp_red > 255:
+            r = int(255)
+        else:
+            r = int(tmp_red)
+    
+    # green
+    if tmp_internal <=66:
+        tmp_green = 99.4708025861 * math.log(tmp_internal) - 161.1195681661
+        if tmp_green < 0:
+            g = int(0)
+        elif tmp_green > 255:
+            g = int(255)
+        else:
+            g = int(tmp_green)
+    else:
+        tmp_green = 288.1221695283 * math.pow(tmp_internal - 60, -0.0755148492)
+        if tmp_green < 0:
+            g = int(0)
+        elif tmp_green > 255:
+            g = int(255)
+        else:
+            g = int(tmp_green)
+    
+    # blue
+    if tmp_internal >=66:
+        b = int(255)
+    elif tmp_internal <= 19:
+        b = int(0)
+    else:
+        tmp_blue = 138.5177312231 * math.log(tmp_internal - 10) - 305.0447927307
+        if tmp_blue < 0:
+            b = int(0)
+        elif tmp_blue > 255:
+            b = int(255)
+        else:
+            b = int(tmp_blue)
+    
+    return (r, g, b)
