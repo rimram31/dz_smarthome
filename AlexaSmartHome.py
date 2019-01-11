@@ -136,6 +136,8 @@ class AlexaInterface:
                     'name': prop_name,
                     'namespace': self.name(),
                     'value': prop_value,
+                    'timeOfSample': datetime.now().replace(microsecond=0).isoformat()+"Z",
+                    'uncertaintyInMilliseconds': 0,
                 }
 
 @INTERFACES.register('Alexa.PowerController')
