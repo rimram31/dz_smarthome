@@ -1,6 +1,7 @@
 import os, json, urllib, ssl, base64
 from urllib.request import urlopen, Request
 import re
+import base64
 from AlexaSmartHome import *
 
 import math, colorsys
@@ -39,16 +40,16 @@ class DomoticzEndpoint(AlexaEndpoint):
             return 'JAMMED'
         elif name == 'brightness':
             level = device['Level']
-            maxLevel = device['MaxDimLevel']
+            maxLevel = device['MaxDimLevel'] or 100
             return int((float(level) * 100) / float(maxLevel))
             #return round(self.entity.attributes['brightness'] / 255.0 * 100)
         elif name == 'percentage':
             level = device['Level']
-            maxLevel = device['MaxDimLevel']
+            maxLevel = device['MaxDimLevel'] or 100
             return int((float(level) * 100) / float(maxLevel))
         elif name == 'colorTemperature':
             level = device['Level']
-            maxLevel = device['MaxDimLevel']
+            maxLevel = device['MaxDimLevel'] or 100
             # Value to be returned 1000 to 10.000
             return 1000 + 9000 * (float(level) / float(maxLevel))
         elif name == 'temperature':
@@ -131,6 +132,117 @@ class SwitchLightAlexaEndpoint(OnOffAlexaEndpoint):
         device = self.getDevice()
         self.handler.setColor(self._endpointId, rgb, device['Level'])
 
+# phil
+class MediaPlayerAlexaEndpoint(OnOffAlexaEndpoint):
+
+    def __init__(self, endpointId, friendlyName="", description="", manufacturerName=""):
+        super().__init__(endpointId, friendlyName, description, manufacturerName)
+        self.addCapability(AlexaStepSpeaker(self, 'Alexa.StepSpeaker'))
+        self.addCapability(AlexaPlaybackController(self, 'Alexa.PlaybackController',supportedOperations=['Play','Pause','Stop','Next','Previous']))
+
+    def adjustVolume(self, targetvol):
+        loops = abs(targetvol // 2)
+        if (targetvol < 0):
+            for x in range(0, loops): self.handler.sendToLMS(self._endpointId, 'VolumeDown')
+        else:
+            for x in range(0, loops): self.handler.sendToLMS(self._endpointId, 'VolumeUp')
+
+    def setMute(self):
+        self.handler.sendToLMS(self._endpointId, 'Mute')
+
+    def setPlay(self):
+        self.handler.sendToLMS(self._endpointId, 'Play')
+
+    def setPause(self):
+        self.handler.sendToLMS(self._endpointId, 'Pause')
+
+    def setStop(self):
+        self.handler.sendToLMS(self._endpointId, 'Stop')
+
+    def setNext(self):
+        self.handler.sendToLMS(self._endpointId, 'Forward')
+
+    def setPrevious(self):
+        self.handler.sendToLMS(self._endpointId, 'Rewind')
+
+    def setRewind(self):
+        self.handler.sendToLMS(self._endpointId, 'Rewind')
+
+    def setFastForward(self):
+        self.handler.sendToLMS(self._endpointId, 'Forward')
+
+    def setStartOver(self):
+        self.handler.sendToLMS(self._endpointId, 'NowPlaying')
+
+# phil
+@ENDPOINT_ADAPTERS.register('LMS')
+class LMSAlexaEndpoint(MediaPlayerAlexaEndpoint):
+    def __init__(self, endpointId, friendlyName="", description="", manufacturerName=""):
+        super().__init__(endpointId, friendlyName, description, manufacturerName)
+        self.addCapability(AlexaPlaybackController(self, 'Alexa.PlaybackController',supportedOperations=['Play','Pause','Stop','Next','Previous']))
+
+    def adjustVolume(self, targetvol):
+        loops = abs(targetvol // 2)
+        if (targetvol < 0):
+            for x in range(0, loops): self.handler.sendToLMS(self._endpointId, 'VolumeDown')
+        else:
+            for x in range(0, loops): self.handler.sendToLMS(self._endpointId, 'VolumeUp')
+
+    def setMute(self):
+        self.handler.sendToLMS(self._endpointId, 'Mute')
+
+    def setPlay(self):
+        self.handler.sendToLMS(self._endpointId, 'Play')
+
+    def setPause(self):
+        self.handler.sendToLMS(self._endpointId, 'Pause')
+
+    def setStop(self):
+        self.handler.sendToLMS(self._endpointId, 'Stop')
+
+    def setNext(self):
+        self.handler.sendToLMS(self._endpointId, 'Forward')
+
+    def setPrevious(self):
+        self.handler.sendToLMS(self._endpointId, 'Rewind')
+
+# phil
+@ENDPOINT_ADAPTERS.register('KODI')
+class KODIAlexaEndpoint(MediaPlayerAlexaEndpoint):
+    def __init__(self, endpointId, friendlyName="", description="", manufacturerName=""):
+        super().__init__(endpointId, friendlyName, description, manufacturerName)
+        self.addCapability(AlexaPlaybackController(self, 'Alexa.PlaybackController',supportedOperations=['Play','Pause','Stop','Next','Previous','Rewind','FastForward','StartOver']))
+
+    def adjustVolume(self, targetvol):
+        return
+
+    def setMute(self):
+        self.handler.sendToKODI(self._endpointId, 'Mute')
+
+    def setPlay(self):
+        self.handler.sendToKODI(self._endpointId, 'PlayPause')
+
+    def setPause(self):
+        self.handler.sendToKODI(self._endpointId, 'PlayPause')
+
+    def setStop(self):
+        self.handler.sendToKODI(self._endpointId, 'Stop')
+
+    def setNext(self):
+        self.handler.sendToKODI(self._endpointId, 'BigStepForward')
+
+    def setPrevious(self):
+        self.handler.sendToKODI(self._endpointId, 'BigStepBack')
+
+    def setRewind(self):
+        self.handler.sendToKODI(self._endpointId, 'Rewind')
+        
+    def setFastForward(self):
+        self.handler.sendToKODI(self._endpointId, 'FastForward')
+
+    def setStartOver(self):
+        self.handler.sendToKODI(self._endpointId, 'ShowSubtitles')
+
 @ENDPOINT_ADAPTERS.register('Blind')
 class BlindAlexaEndpoint(OnOffAlexaEndpoint):
 
@@ -169,6 +281,12 @@ class ContactAlexaEndpoint(DomoticzEndpoint):
     def __init__(self, endpointId, friendlyName="", description="", manufacturerName=""):
         super().__init__(endpointId, friendlyName, description, manufacturerName)
         self.addCapability(AlexaContactSensor(self, 'Alexa.ContactSensor',[{'name': 'detectionState'}]))
+
+@ENDPOINT_ADAPTERS.register('Motion')
+class MotionAlexaEndpoint(DomoticzEndpoint):
+    def __init__(self, endpointId, friendlyName="", description="", manufacturerName=""):
+        super().__init__(endpointId, friendlyName, description, manufacturerName)
+        self.addCapability(AlexaMotionSensor(self, 'Alexa.MotionSensor',[{'name': 'detectionState'}]))
 
 @ENDPOINT_ADAPTERS.register('TemperatureSensor')
 class TemperatureSensorAlexaEndpoint(DomoticzEndpoint):
@@ -262,6 +380,13 @@ class Domoticz(object):
             endpoint.addCapability(AlexaColorTemperatureController(endpoint, 'Alexa.ColorTemperatureController'))
         elif className == 'Blind' or className == 'RFY':
             endpoint.addCapability(AlexaPercentageController(endpoint, 'Alexa.PercentageController',[{'name': 'percentage'}]))
+        # phil
+        elif className == 'LMS':
+            endpoint.addCapability(AlexaStepSpeaker(self, 'Alexa.StepSpeaker'))
+            endpoint.addCapability(AlexaPlaybackController(self, 'Alexa.PlaybackController',supportedOperations=['Play','Pause','Stop','Next','Previous']))
+        elif className == 'KODI':
+            endpoint.addCapability(AlexaStepSpeaker(self, 'Alexa.StepSpeaker'))
+            endpoint.addCapability(AlexaPlaybackController(self, 'Alexa.PlaybackController',supportedOperations=['Play','Pause','Stop','Next','Previous','Rewind','FastForward','StartOver']))                            
         cookies = request['endpoint']['cookie']
         if cookies is not None:
             endpoint.addCookie(cookies)
@@ -312,6 +437,30 @@ class Domoticz(object):
                     if (hasDimmer):
                         endpoint.addCapability(AlexaPercentageController(self, 'Alexa.PercentageController',[{'name': 'percentage'}]))
                         endpoint.addCapability(AlexaBrightnessController(self, 'Alexa.BrightnessController',[{'name': 'brightness'}]))
+                    elif (switchType.startswith('Blind') or switchType.startswith('RFY')):
+                        if   switchType.startswith('Blind'): endpoint = BlindAlexaEndpoint("Blind-"+endpointId, friendlyName, description, manufacturerName)
+                        elif switchType.startswith('RFY'):   endpoint = RFYAlexaEndpoint("RFY-"+endpointId, friendlyName, description, manufacturerName)
+                        endpoint.addDisplayCategories("SWITCH")
+                        hasDimmer = deviceHasDimmer(device)
+                        if (hasDimmer):
+                            endpoint.addCapability(AlexaPercentageController(self, 'Alexa.PercentageController',[{'name': 'percentage'}]))
+                    # phil
+                    elif (switchType.startswith('Motion Sensor')):
+                        endpoint = MotionAlexaEndpoint("Motion-"+endpointId, friendlyName, description, manufacturerName)
+                        endpoint.addCapability(AlexaMotionSensor(self, 'Alexa.MotionSensor',[{'name': 'detectionState'}]))
+                        endpoint.addDisplayCategories("MOTION_SENSOR")
+                    elif (switchType.startswith('Contact')) or (switchType.startswith('Door Contact')):
+                        endpoint = ContactAlexaEndpoint("Contact-"+endpointId, friendlyName, description, manufacturerName)
+                        endpoint.addCapability(AlexaContactSensor(self, 'Alexa.ContactSensor',[{'name': 'detectionState'}]))
+                        endpoint.addDisplayCategories("CONTACT_SENSOR")
+                    elif (switchType.startswith('Media Player')) and (device['HardwareType'].startswith('Logitech')):
+                        endpoint = LMSAlexaEndpoint("LMS-"+endpointId, friendlyName, description, manufacturerName)
+                        endpoint.addCapability(AlexaStepSpeaker(self, 'Alexa.StepSpeaker'))
+                        endpoint.addDisplayCategories("SPEAKER")
+                    elif (switchType.startswith('Media Player')) and (device['HardwareType'].startswith('Kodi')):
+                        endpoint = KODIAlexaEndpoint("KODI-"+endpointId, friendlyName, description, manufacturerName)
+                        endpoint.addCapability(AlexaStepSpeaker(self, 'Alexa.StepSpeaker'))        
+                        endpoint.addDisplayCategories("SPEAKER")
                 else:
                     # Usual switch case
                     endpoint = SwitchLightAlexaEndpoint("SwitchLight-"+endpointId, friendlyName, description, manufacturerName)
@@ -335,13 +484,33 @@ class Domoticz(object):
                 elif (switchType.startswith('Door')):
                     endpoint = LockAlexaEndpoint("Lock-"+endpointId, friendlyName, description, manufacturerName)
                     endpoint.addDisplayCategories("SWITCH")
-                elif (switchType.startswith('Contact') or switchType.startswith('Motion Sensor')):
+                # phil
+                elif (switchType.startswith('Contact')) or (switchType.startswith('Door Contact')):
                     endpoint = ContactAlexaEndpoint("Contact-"+endpointId, friendlyName, description, manufacturerName)
+                    endpoint.addCapability(AlexaContactSensor(self, 'Alexa.ContactSensor',[{'name': 'detectionState'}]))                             
                     endpoint.addDisplayCategories("CONTACT_SENSOR")
+                elif (switchType.startswith('Motion Sensor')):
+                    endpoint = MotionAlexaEndpoint("Motion-"+endpointId, friendlyName, description, manufacturerName)
+                    endpoint.addCapability(AlexaMotionSensor(self, 'Alexa.MotionSensor',[{'name': 'detectionState'}]))                             
+                    endpoint.addDisplayCategories("MOTION_SENSOR")                        
+                elif (switchType.startswith('Blind') or switchType.startswith('RFY')):
+                    if   switchType.startswith('Blind'): endpoint = BlindAlexaEndpoint("Blind-"+endpointId, friendlyName, description, manufacturerName)
+                    elif switchType.startswith('RFY'):   endpoint = RFYAlexaEndpoint("RFY-"+endpointId, friendlyName, description, manufacturerName)
+                    endpoint.addDisplayCategories("SWITCH")
+                    hasDimmer = deviceHasDimmer(device)
+                    if (hasDimmer):
+                        endpoint.addCapability(AlexaPercentageController(self, 'Alexa.PercentageController',[{'name': 'percentage'}]))   
                 else:
                     # Usual switch case
                     endpoint = SwitchLightAlexaEndpoint("SwitchLight-"+endpointId, friendlyName, description, manufacturerName)
-                    endpoint.addDisplayCategories("SWITCH")
+                    # phil
+                    matchObj = re.match( r'.*smartplug', device['Description'], re.M|re.I|re.DOTALL)
+                    if matchObj: 
+                        endpoint.addDisplayCategories("SMARTPLUG")               
+                    elif ('Lamp' in friendlyName) or ('Light' in friendlyName):
+                        endpoint.addDisplayCategories("LIGHT")                  
+                    else:                      
+                        endpoint.addDisplayCategories("SWITCH")                  
                     hasDimmer = deviceHasDimmer(device)
                     if (hasDimmer):
                         endpoint.addCapability(AlexaPercentageController(self, 'Alexa.PercentageController',[{'name': 'percentage'}]))
@@ -364,15 +533,26 @@ class Domoticz(object):
                 endpoint = LockAlexaEndpoint("Lock-"+endpointId, friendlyName, description, manufacturerName)
                 endpoint.addDisplayCategories("SWITCH")
 
-            elif (devType.startswith('Contact')):
+            elif (devType.startswith('Contact')) or (devType.startswith('Door Contact')):
                 endpoint = ContactAlexaEndpoint("Contact-"+endpointId, friendlyName, description, manufacturerName)
+                endpoint.addCapability(AlexaContactSensor(self, 'Alexa.ContactSensor',[{'name': 'detectionState'}]))                    
                 endpoint.addDisplayCategories("CONTACT_SENSOR")
+
+            elif (devType.startswith('Motion Sensor')):
+                endpoint = MotionAlexaEndpoint("Motion-"+endpointId, friendlyName, description, manufacturerName)
+                endpoint.addCapability(AlexaMotionSensor(self, 'Alexa.MotionSensor',[{'name': 'detectionState'}]))                             
+                endpoint.addDisplayCategories("MOTION_SENSOR")
 
             elif (devType.startswith('Temp')):
                 endpoint = TemperatureSensorAlexaEndpoint("TemperatureSensor-"+endpointId, friendlyName, description, manufacturerName)
                 endpoint.addDisplayCategories("TEMPERATURE_SENSOR")
 
             elif (devType.startswith('Therm')):
+                endpoint = ThermostatAlexaEndpoint("Thermostat-"+endpointId, friendlyName, description, manufacturerName)
+                endpoint.addDisplayCategories("THERMOSTAT")
+                endpoint.addDisplayCategories("TEMPERATURE_SENSOR")
+
+            elif (devType.startswith('Heating')):
                 endpoint = ThermostatAlexaEndpoint("Thermostat-"+endpointId, friendlyName, description, manufacturerName)
                 endpoint.addDisplayCategories("THERMOSTAT")
                 endpoint.addDisplayCategories("TEMPERATURE_SENSOR")
@@ -408,7 +588,7 @@ class Domoticz(object):
                     friendlyName = self.prefixName + friendlyName
 
                 if (sceneType.startswith('Scene') or sceneType.startswith('Group')):
-                    if sceneType.startswith('Scene')  : 
+                    if sceneType.startswith('Scene'):
                         endpoint = SceneAlexaEndpoint('Scene-'+endpointId, friendlyName, description, manufacturerName)
                         endpoint.addDisplayCategories("SCENE_TRIGGER")
                     elif sceneType.startswith('Group'): 
@@ -458,10 +638,17 @@ class Domoticz(object):
     def setSceneSwitch(self, idx, value):
         self.api('type=command&param=switchscene&idx=%s&switchcmd=%s'%(idx,value))
 
-# philchillbill comment
+    # phil
+    def sendToLMS(self, idx, value):        
+        self.api('type=command&param=lmsmediacommand&idx=%s&action=%s'%(idx,value))
+        
+    def sendToKODI(self, idx, value):        
+        self.api('type=command&param=kodimediacommand&idx=%s&action=%s'%(idx,value))        
+
+# phil
 def deviceHasDimmer(device):
-    #return (device['HaveDimmer'] and (device['DimmerType'] != 'none')) or device['SwitchType'].endswith('Percentage')
-    return device['HaveDimmer']
+    if (not 'DimmerType' in device): device['DimmerType'] = 'none'
+    return (device['HaveDimmer'] and (device['DimmerType'] != 'none')) or device['SwitchType'].endswith('Percentage')
 
 def color_hsb_to_RGB(fH: float, fS: float, fB: float) -> Tuple[int, int, int]:
     """Convert a hsb into its rgb representation."""

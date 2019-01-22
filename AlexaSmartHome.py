@@ -70,7 +70,8 @@ class AlexaEndpoint(object):
 
 class AlexaInterface:
 
-    def __init__(self, endpoint, name = 'Alexa', properties = [], proactivelyReported = True, retrievable = True, modesSupported = None, deactivationSupported = None):
+    def __init__(self, endpoint, name = 'Alexa', properties = [], proactivelyReported = True, retrievable = True, modesSupported = None, deactivationSupported = None,
+                                                                  supportedOperations = None):
         self._endpoint = endpoint
         self._name = name
         self._properties = properties
@@ -78,6 +79,7 @@ class AlexaInterface:
         self._retrievable = retrievable
         self._modesSupported = modesSupported
         self._deactivationSupported = deactivationSupported
+        self._supportedOperations = supportedOperations
 
     def name(self):
         return self._name
@@ -108,6 +110,9 @@ class AlexaInterface:
 
     def setModesSupported(self, modesSupported):
         self._modesSupported = modesSupported
+
+    def supportedOperations(self):
+        return self._supportedOperations
 
     def serializeDiscovery(self):
         result = {
@@ -209,6 +214,18 @@ class AlexaPlaybackController(AlexaInterface):
     def name(self):
         return 'Alexa.PlaybackController'
 
+    def serializeDiscovery(self):
+        result = {
+            'type': 'AlexaInterface',
+            'interface': self.name(),
+            'version': self.version(),
+            'properties': {},
+            'supportedOperations': self.supportedOperations()
+        }
+        #if self.supportedOperations() is not None:
+        #    print('PBC '+str(self.supportedOperations()))
+        return result
+
 @INTERFACES.register('Alexa.InputController')
 class AlexaInputController(AlexaInterface):
     def name(self):
@@ -243,6 +260,14 @@ class AlexaThermostatController(AlexaInterface):
 class AlexaContactSensor(AlexaInterface):
     def name(self):
         return 'Alexa.ContactSensor'
+
+    def propertiesSupported(self):
+        return [{'name': 'detectionState'}]
+
+@INTERFACES.register('Alexa.MotionSensor')
+class AlexaMotionSensor(AlexaInterface):
+    def name(self):
+        return 'Alexa.MotionSensor'
 
     def propertiesSupported(self):
         return [{'name': 'detectionState'}]
@@ -545,33 +570,67 @@ class Alexa(object):
         def AdjustVolume(self, request):
             volume_step = request[API_PAYLOAD]['volumeSteps']
             _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            # phil
+            endpoint = self.handler.getEndpoint(request)
+            endpoint.adjustVolume(volume_step)
             return api_message(request)
 
         def SetMute(self, request):
             mute = bool(request[API_PAYLOAD]['mute'])
             _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            # phil
+            endpoint = self.handler.getEndpoint(request)
+            endpoint.setMute()
             return api_message(request)
 
     class PlaybackController(AlexaSmartHomeCall):
 
         def Play(self, request):
             _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            endpoint = self.handler.getEndpoint(request)
+            endpoint.setPlay()
             return api_message(request)
 
         def Pause(self, request):
             _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            endpoint = self.handler.getEndpoint(request)
+            endpoint.setPause()
             return api_message(request)
 
         def Stop(self, request):
             _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            endpoint = self.handler.getEndpoint(request)
+            endpoint.setStop()
             return api_message(request)
 
         def Next(self, request):
             _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            endpoint = self.handler.getEndpoint(request)
+            endpoint.setNext()
             return api_message(request)
 
         def Previous(self, request):
             _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            endpoint = self.handler.getEndpoint(request)
+            endpoint.setPrevious()
+            return api_message(request)
+            
+        def Rewind(self, request):
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            endpoint = self.handler.getEndpoint(request)
+            endpoint.setRewind()
+            return api_message(request)
+
+        def FastForward(self, request):
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            endpoint = self.handler.getEndpoint(request)
+            endpoint.setFastForward()
+            return api_message(request) 
+
+        def StartOver(self, request):
+            _LOGGER.debug("Request %s/%s", request[API_HEADER]['namespace'], request[API_HEADER]['name'])
+            endpoint = self.handler.getEndpoint(request)
+            endpoint.setStartOver()
             return api_message(request)
 
     class ThermostatController(AlexaSmartHomeCall):
