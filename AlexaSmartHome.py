@@ -303,13 +303,14 @@ def api_message(request,
     }
 
     # If a correlation token exists, add it to header / Need by Async requests
-    token = request[API_HEADER].get('correlationToken')
-    if token:
-        response[API_EVENT][API_HEADER]['correlationToken'] = token
+    if request is not None:
+        token = request[API_HEADER].get('correlationToken')
+        if token:
+            response[API_EVENT][API_HEADER]['correlationToken'] = token
 
-    # Extend event with endpoint object / Need by Async requests
-    if API_ENDPOINT in request:
-        response[API_EVENT][API_ENDPOINT] = request[API_ENDPOINT].copy()
+        # Extend event with endpoint object / Need by Async requests
+        if API_ENDPOINT in request:
+            response[API_EVENT][API_ENDPOINT] = request[API_ENDPOINT].copy()
 
     if context is not None:
         response[API_CONTEXT] = context
@@ -347,6 +348,12 @@ def handle_message(handler, message):
     name = message[API_HEADER]['name']
 
     #entity_id = request[API_ENDPOINT]['endpointId'].replace('#', '.')
+    try:
+        if 'scope' in message['payload']:
+            handler.setAccessToken(message['payload']['scope']['token'])
+        elif 'scope' in message['endpoint']:
+            handler.setAccessToken(message['endpoint']['scope']['token'])
+    except Exception: pass
 
     return invoke(namespace, name, handler, message)
 
@@ -710,6 +717,29 @@ class Alexa(object):
             return api_message(request,
                 name='StateReport',
                 context={'properties': properties})
+
+def api_reportState(endpoint, accessToken):
+    properties = []
+    for interface in endpoint.capabilities():
+        properties.extend(interface.serializeProperties())
+    response = api_message(None,
+        name = 'ChangeReport',
+        payload = {
+            'change': {
+                'cause': {
+                    'type': 'PHYSICAL_INTERACTION'
+                },
+                'properties': properties
+            }
+        })
+    response[API_EVENT][API_ENDPOINT] = { 
+        'scope': {
+            'type': 'BearerToken',
+            'token': accessToken
+        },
+        'endpointId': endpoint.endpointId(),
+      }
+    return response
 
 def invoke(namespace, name, handler, request):
     try:

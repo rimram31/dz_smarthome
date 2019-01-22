@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+
+import sys
+import requests
+import AlexaSmartHome, DomoticzHandler
+
+#North America: https://api.amazonalexa.com/v3/events
+#Europe: https://api.eu.amazonalexa.com/v3/events
+#Far East: https://api.fe.amazonalexa.com/v3/events
+alexa_endpoint    = "https://api.eu.amazonalexa.com/v3/events"
+access_token = "...."
+
+dz = DomoticzHandler.Domoticz("http://localhost:8080")
+#dz = DomoticzHandler.Domoticz("http://localhost:8080", username, password)
+
+def main(argv):
+
+    device_id = argv[0]
+    device = dz.getDevice(device_id)
+    alexicz_endpoint = dz.getEndpointDevice(device)
+    data = AlexaSmartHome.api_reportState(alexicz_endpoint, access_token)
+    print(data)
+    response = requests.post(alexa_endpoint, json=data)
+    print response
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
