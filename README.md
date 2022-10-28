@@ -1,5 +1,7 @@
 # Alexa Domoticz Smart Home skill
 
+Sorry, I'm no more supporting this code, free to use and/or copy it 
+
 ## Presentation
 
 Very first version of this skill.
@@ -38,3 +40,6 @@ Thanks to Damsee to provide a very good documentation, the one provided here
 ## Help for development
 
 I've add ```proxy_local.py``` source code I'm using to develop this skill which is only for development purpose. It run a local (flask) python server handling Smart Home Alexa API calls and running Alexicz code. Used with [Alexa Smart Home Proxy](https://github.com/rimram31/alexa_smarthome), you get the same behaviour except that all teh Smart Home API work is done locally (and can be debug easily).
+
+## Additions
+Thanks to sd5445fr which contribute to two new R3 documentations.
