@@ -1,6 +1,6 @@
 # Alexa Domoticz Smart Home skill
 
-Sorry, I'm no more supporting this code, free to use and/or copy it. I'm using today (in addition to domotiicz) Home Assistant with my alexa_smarthome skill driving. domoticz driven by HA as a slave (using an Alexa plugins!).
+Sorry, I'm no more supporting this code, free to use and/or copy it. I'm using today (in addition to domotiicz) Home Assistant with my alexa_smarthome skill. Domoticz devoces are driven by HA as a slave (using an Alexa plugins!).
 
 ## Presentation
 
